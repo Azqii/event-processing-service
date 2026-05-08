@@ -1,0 +1,31 @@
+services:
+  asgi:
+    build: .
+    command: uvicorn asgi_app:app --host 0.0.0.0 --port 8000 --reload
+    container_name: event-processing-asgi
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+    networks:
+      - event-processing
+    restart: unless-stopped
+
+  mq:
+    build: .
+    command: faststream run mq_app:app
+    container_name: event-processing-mq
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
+    networks:
+      - event-processing
+    restart: unless-stopped
+
+networks:
+  event-processing:
+    name: event-processing
+    external: true

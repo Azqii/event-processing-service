@@ -1,0 +1,30 @@
+services:
+  kafka:
+    image: apache/kafka:latest
+    container_name: event-processing-kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./infra/kafka/kafka_jaas.conf:/etc/kafka/kafka_jaas.conf:ro
+    env_file:
+      - .env
+    networks:
+      - event-processing
+    restart: unless-stopped
+
+  clickhouse:
+    image: clickhouse:latest
+    container_name: event-processing-clickhouse
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./infra/clickhouse/create_events_table.sql:/docker-entrypoint-initdb.d/create_events_table.sql:ro
+    env_file:
+      - .env
+    networks:
+      - event-processing
+    restart: unless-stopped
+
+networks:
+  event-processing:
+    name: event-processing

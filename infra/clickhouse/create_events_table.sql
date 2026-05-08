@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS events (
+CREATE DATABASE IF NOT EXISTS events;
+
+CREATE TABLE IF NOT EXISTS events.events (
     id UUID,
     source_id String,
     event_type String,
