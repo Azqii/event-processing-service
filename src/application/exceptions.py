@@ -16,3 +16,7 @@ class RepositoryError(ApplicationError):
 
 class PublisherError(ApplicationError):
     pass
+
+
+class AuthenticationError(ApplicationError):
+    pass

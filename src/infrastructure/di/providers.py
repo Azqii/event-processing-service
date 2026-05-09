@@ -6,6 +6,7 @@ from faststream.kafka import KafkaBroker
 
 from application.interfaces.event_publisher import EventPublisher
 from application.interfaces.event_repository import EventRepository
+from application.interfaces.token_verifier import TokenVerifier
 from application.services.event_processing import (
     EventProcessingService,
 )
@@ -14,9 +15,12 @@ from application.use_cases.get_event_count_by_type import (
     GetEventCountByTypeUseCase,
 )
 from application.use_cases.process_event import ProcessEventUseCase
+from infrastructure.auth.jwks_client import JWKSClient
+from infrastructure.auth.keycloak_token_verifier import KeycloakTokenVerifier
 from infrastructure.config.app import AppSettings
 from infrastructure.config.clickhouse import ClickHouseSettings
 from infrastructure.config.kafka import KafkaSettings
+from infrastructure.config.keycloak import KeycloakSettings
 from infrastructure.mq.provider import create_kafka_broker
 from infrastructure.mq.publisher import KafkaEventPublisher
 from infrastructure.olap.client import create_clickhouse_client
@@ -35,6 +39,22 @@ class AppProvider(Provider):
     @provide(scope=Scope.APP)
     def get_clickhouse_settings(self) -> ClickHouseSettings:
         return ClickHouseSettings()
+
+    @provide(scope=Scope.APP)
+    def get_keycloak_settings(self) -> KeycloakSettings:
+        return KeycloakSettings()
+
+    @provide(scope=Scope.APP)
+    def get_jwks_client(self, settings: KeycloakSettings) -> JWKSClient:
+        return JWKSClient(settings.KEYCLOAK_JWKS_URL)
+
+    @provide(scope=Scope.APP)
+    def get_token_verifier(
+        self,
+        settings: KeycloakSettings,
+        jwks_client: JWKSClient,
+    ) -> TokenVerifier:
+        return KeycloakTokenVerifier(settings, jwks_client)
 
     @provide(scope=Scope.APP)
     async def get_kafka_broker(

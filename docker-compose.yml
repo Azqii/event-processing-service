@@ -15,7 +15,7 @@ services:
 
   mq:
     build: .
-    command: faststream run mq_app:app
+    command: faststream run src/mq_app:app
     container_name: event-processing-mq
     env_file:
       - .env
