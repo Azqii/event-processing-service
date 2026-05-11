@@ -11,6 +11,9 @@ from application.services.event_processing import (
     EventProcessingService,
 )
 from application.use_cases.accept_event import AcceptEventUseCase
+from application.use_cases.get_event_count_by_source import (
+    GetEventCountBySourceUseCase,
+)
 from application.use_cases.get_event_count_by_type import (
     GetEventCountByTypeUseCase,
 )
@@ -108,3 +111,9 @@ class AppProvider(Provider):
         self, repository: EventRepository
     ) -> GetEventCountByTypeUseCase:
         return GetEventCountByTypeUseCase(repository)
+
+    @provide(scope=Scope.REQUEST)
+    def get_event_count_by_source_use_case(
+        self, repository: EventRepository
+    ) -> GetEventCountBySourceUseCase:
+        return GetEventCountBySourceUseCase(repository)

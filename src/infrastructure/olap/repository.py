@@ -4,7 +4,7 @@ from datetime import datetime
 
 from clickhouse_connect.driver.asyncclient import AsyncClient
 
-from application.dto.analytics import EventCountByTypeDTO
+from application.dto.analytics import EventCountBySourceDTO, EventCountByTypeDTO
 from application.exceptions import RepositoryError
 from application.interfaces.event_repository import EventRepository
 from domain.entities.event import Event
@@ -72,5 +72,28 @@ class ClickHouseEventRepository(EventRepository):
             raise RepositoryError(f"Failed to query events: {exc}") from exc
         return [
             EventCountByTypeDTO(event_type=row[0], count=row[1])
+            for row in result.result_rows
+        ]
+
+    async def count_by_source(
+        self, date_from: datetime, date_until: datetime
+    ) -> list[EventCountBySourceDTO]:
+        query = """
+            SELECT source_id, count() AS count
+            FROM events
+            WHERE occurred_at >= {date_from:DateTime}
+              AND occurred_at < {date_until:DateTime}
+            GROUP BY source_id
+            ORDER BY count DESC
+        """
+        try:
+            result = await self._client.query(
+                query,
+                parameters={"date_from": date_from, "date_until": date_until},
+            )
+        except Exception as exc:
+            raise RepositoryError(f"Failed to query events: {exc}") from exc
+        return [
+            EventCountBySourceDTO(source_id=row[0], count=row[1])
             for row in result.result_rows
         ]

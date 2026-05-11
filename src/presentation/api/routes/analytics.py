@@ -6,11 +6,17 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from application.dto.auth import AuthenticatedClient
 from application.exceptions import InvalidDateRangeError
+from application.use_cases.get_event_count_by_source import (
+    GetEventCountBySourceUseCase,
+)
 from application.use_cases.get_event_count_by_type import (
     GetEventCountByTypeUseCase,
 )
 from presentation.api.dependencies import require_admin
-from presentation.api.schemas.analytics import EventCountByTypeResponseSchema
+from presentation.api.schemas.analytics import (
+    EventCountBySourceResponseSchema,
+    EventCountByTypeResponseSchema,
+)
 
 router = APIRouter(
     route_class=DishkaRoute,
@@ -37,5 +43,25 @@ async def get_event_count_by_type(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return [
         EventCountByTypeResponseSchema(event_type=r.event_type, count=r.count)
+        for r in results
+    ]
+
+
+@router.get(
+    "/events/count-by-source",
+    response_model=list[EventCountBySourceResponseSchema],
+)
+async def get_event_count_by_source(
+    date_from: datetime,
+    date_until: datetime,
+    _auth: Annotated[AuthenticatedClient, Depends(require_admin)],
+    use_case: FromDishka[GetEventCountBySourceUseCase],
+) -> list[EventCountBySourceResponseSchema]:
+    try:
+        results = await use_case.count_by_source(date_from, date_until)
+    except InvalidDateRangeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return [
+        EventCountBySourceResponseSchema(source_id=r.source_id, count=r.count)
         for r in results
     ]
