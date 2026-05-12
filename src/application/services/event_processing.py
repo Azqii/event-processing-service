@@ -98,8 +98,9 @@ class EventProcessingService:
         )
         return {
             "delivery_delay_ms": delivery_delay_ms,
-            "processing_time_ms": int(
-                (processed_at - processing_started_at).total_seconds() * 1000
+            "processing_time_ms": round(
+                (processed_at - processing_started_at).total_seconds() * 1000,
+                3,
             ),
             "handler_version": self._handler_version,
             "is_late": delivery_delay_ms > self._LATE_THRESHOLD_MS,

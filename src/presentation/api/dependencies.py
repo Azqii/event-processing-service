@@ -1,4 +1,3 @@
-import logging
 from typing import Annotated
 
 from dishka.integrations.fastapi import FromDishka, inject
@@ -7,8 +6,6 @@ from fastapi import Depends, HTTPException, Request, status
 from application.dto.auth import AuthenticatedClient
 from application.exceptions import AuthenticationError
 from application.interfaces.token_verifier import TokenVerifier
-
-logger = logging.getLogger(__name__)
 
 
 def _extract_bearer_token(request: Request) -> str:
